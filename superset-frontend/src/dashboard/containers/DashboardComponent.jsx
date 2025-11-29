@@ -51,6 +51,8 @@ const propTypes = {
   isComponentVisible: PropTypes.bool,
 };
 
+const isMobile = window.innerWidth < 768;
+
 const DashboardComponent = props => {
   const dispatch = useDispatch();
   const dashboardLayout = useSelector(state => state.dashboardLayout.present);
@@ -114,22 +116,30 @@ const DashboardComponent = props => {
 
   const Component = component ? componentLookup[component.type] : null;
   return Component ? (
-    <Component
-      {...props}
-      {...boundActionCreators}
-      component={component}
-      getComponentById={getComponentById}
-      parentComponent={parentComponent}
-      editMode={editMode}
-      filters={filters}
-      dashboardId={dashboardId}
-      dashboardInfo={dashboardInfo}
-      fullSizeChartId={fullSizeChartId}
-      occupiedColumnCount={occupiedColumnCount}
-      minColumnWidth={minColumnWidth}
-      isComponentVisible={isComponentVisible}
-      embeddedMode={embeddedMode}
-    />
+    <div
+      style={{
+        width: isMobile ? "100%" : "auto", // full width on phone
+        display: "block",
+        marginBottom: isMobile ? "14px" : "8px", // spacing between widgets
+      }}
+    >
+      <Component
+        {...props}
+        {...boundActionCreators}
+        component={component}
+        getComponentById={getComponentById}
+        parentComponent={parentComponent}
+        editMode={editMode}
+        filters={filters}
+        dashboardId={dashboardId}
+        dashboardInfo={dashboardInfo}
+        fullSizeChartId={fullSizeChartId}
+        occupiedColumnCount={occupiedColumnCount}
+        minColumnWidth={minColumnWidth}
+        isComponentVisible={isComponentVisible}
+        embeddedMode={embeddedMode}
+      />
+    </div>
   ) : null;
 };
 
