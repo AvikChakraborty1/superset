@@ -326,8 +326,8 @@ class DashboardGrid extends PureComponent {
                   parentId={gridComponent.id}
                   depth={depth + 1}
                   index={index}
-                  availableColumnCount={isMobile ? 1 : GRID_COLUMN_COUNT} // stack vertically on mobile
-                  columnWidth={adjustedColumnWidth} // full width on mobile
+                  availableColumnCount={1}     // stack vertically on mobile
+                  columnWidth={width}  // full width on mobile
                   isComponentVisible={isComponentVisible}
                   onResizeStart={this.handleResizeStart}
                   onResize={this.handleResize}
