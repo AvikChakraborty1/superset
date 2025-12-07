@@ -60,12 +60,12 @@ const DashboardEmptyStateContainer = styled.div`
 `;
 
 const GridContent = styled.div`
-  ${({ theme, editMode }) => css`
+  ${({ theme, editMode, isMobile }) => css`
     display: flex;
     flex-direction: column;
     /* gutters between rows */
     & > div:not(:last-child):not(.empty-droptarget) {
-      ${!editMode && `margin-bottom: ${theme.sizeUnit * 4}px`};
+      ${!editMode && `margin-bottom: ${isMobile ? theme.sizeUnit * 2 : theme.sizeUnit * 4}px`};
     }
 
     .empty-droptarget {
@@ -122,6 +122,7 @@ class DashboardGrid extends PureComponent {
     super(props);
     this.state = {
       isResizing: false,
+      isMobile: window.innerWidth < 768,
     };
     this.theme = this;
     this.handleResizeStart = this.handleResizeStart.bind(this);
@@ -131,6 +132,19 @@ class DashboardGrid extends PureComponent {
     this.setGridRef = this.setGridRef.bind(this);
     this.handleChangeTab = this.handleChangeTab.bind(this);
   }
+
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  }
+
+  handleResize = () => {
+    this.setState({ isMobile: window.innerWidth < 768 });
+  };
+
 
   getRowGuidePosition(resizeRef) {
     if (resizeRef && this.grid) {
@@ -198,8 +212,12 @@ class DashboardGrid extends PureComponent {
     const columnPlusGutterWidth =
       (width + GRID_GUTTER_SIZE) / GRID_COLUMN_COUNT;
 
+    
+
     const columnWidth = columnPlusGutterWidth - GRID_GUTTER_SIZE;
-    const { isResizing } = this.state;
+    const { isResizing, isMobile } = this.state;
+
+    const adjustedColumnWidth = isMobile ? width : columnWidth;
 
     const shouldDisplayEmptyState = gridComponent?.children?.length === 0;
     const shouldDisplayTopLevelTabEmptyState =
@@ -279,6 +297,7 @@ class DashboardGrid extends PureComponent {
             className="grid-content"
             data-test="grid-content"
             editMode={editMode}
+            isMobile={isMobile}
           >
             {/* make the area above components droppable */}
             {editMode && (
@@ -307,14 +326,15 @@ class DashboardGrid extends PureComponent {
                   parentId={gridComponent.id}
                   depth={depth + 1}
                   index={index}
-                  availableColumnCount={GRID_COLUMN_COUNT}
-                  columnWidth={columnWidth}
+                  availableColumnCount={1}     // stack vertically on mobile
+                  columnWidth={width}  // full width on mobile
                   isComponentVisible={isComponentVisible}
                   onResizeStart={this.handleResizeStart}
                   onResize={this.handleResize}
                   onResizeStop={this.handleResizeStop}
                   onChangeTab={this.handleChangeTab}
                 />
+
                 {/* make the area below components droppable */}
                 {editMode && (
                   <Droppable

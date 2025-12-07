@@ -55,6 +55,8 @@ export interface ResizableContainerProps {
   editMode: boolean;
 }
 
+const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
 // because columns are not multiples of a single variable (width = n*cols + (n-1) * gutters)
 // we snap to the base unit and then snap to _actual_ column multiples on stop
 const SNAP_TO_GRID: [number, number] = [GRID_BASE_UNIT, GRID_BASE_UNIT];
@@ -224,8 +226,44 @@ export default function ResizableContainer({
     ],
   );
 
-  const size = useMemo(
-    () => ({
+  // const size = useMemo(
+  //   () => ({
+  //     width: adjustableWidth
+  //       ? (widthStep + gutterWidth) * widthMultiple - gutterWidth
+  //       : (staticWidthMultiple && staticWidthMultiple * widthStep) ||
+  //         staticWidth ||
+  //         undefined,
+  //     height: adjustableHeight
+  //       ? heightStep * heightMultiple
+  //       : (staticHeightMultiple && staticHeightMultiple * heightStep) ||
+  //         staticHeight ||
+  //         undefined,
+  //   }),
+  //   [
+  //     adjustableWidth,
+  //     widthStep,
+  //     gutterWidth,
+  //     widthMultiple,
+  //     staticWidthMultiple,
+  //     staticWidth,
+  //     adjustableHeight,
+  //     heightStep,
+  //     heightMultiple,
+  //     staticHeightMultiple,
+  //     staticHeight,
+  //   ],
+  // );
+
+    const size = useMemo(() => {
+    if (isMobile) {
+      return {
+        // width = one full row width (1 column * step + no gutter)
+        width: (widthStep + gutterWidth) * widthMultiple - gutterWidth,
+        height: undefined,
+      };
+    }
+
+    return {
       width: adjustableWidth
         ? (widthStep + gutterWidth) * widthMultiple - gutterWidth
         : (staticWidthMultiple && staticWidthMultiple * widthStep) ||
@@ -236,21 +274,22 @@ export default function ResizableContainer({
         : (staticHeightMultiple && staticHeightMultiple * heightStep) ||
           staticHeight ||
           undefined,
-    }),
-    [
-      adjustableWidth,
-      widthStep,
-      gutterWidth,
-      widthMultiple,
-      staticWidthMultiple,
-      staticWidth,
-      adjustableHeight,
-      heightStep,
-      heightMultiple,
-      staticHeightMultiple,
-      staticHeight,
-    ],
-  );
+    };
+  }, [
+    isMobile,
+    adjustableWidth,
+    widthStep,
+    gutterWidth,
+    widthMultiple,
+    staticWidthMultiple,
+    staticWidth,
+    adjustableHeight,
+    heightStep,
+    heightMultiple,
+    staticHeightMultiple,
+    staticHeight,
+  ]);
+  
 
   const handleComponent = useMemo(
     () => ({
@@ -261,18 +300,30 @@ export default function ResizableContainer({
     [],
   );
 
-  const enableConfig = useMemo(() => {
-    if (editMode && adjustableWidth && adjustableHeight) {
+  // const enableConfig = useMemo(() => {
+  //   if (editMode && adjustableWidth && adjustableHeight) {
+  //     return resizableConfig.widthAndHeight;
+  //   }
+  //   if (editMode && adjustableWidth) {
+  //     return resizableConfig.widthOnly;
+  //   }
+  //   if (editMode && adjustableHeight) {
+  //     return resizableConfig.heightOnly;
+  //   }
+  //   return resizableConfig.notAdjustable;
+  // }, [editMode, adjustableWidth, adjustableHeight]);
+
+    const enableConfig = useMemo(() => {
+    if (isMobile) return resizableConfig.notAdjustable;   // NO resize on phone
+
+    if (editMode && adjustableWidth && adjustableHeight)
       return resizableConfig.widthAndHeight;
-    }
-    if (editMode && adjustableWidth) {
-      return resizableConfig.widthOnly;
-    }
-    if (editMode && adjustableHeight) {
-      return resizableConfig.heightOnly;
-    }
+    if (editMode && adjustableWidth) return resizableConfig.widthOnly;
+    if (editMode && adjustableHeight) return resizableConfig.heightOnly;
+
     return resizableConfig.notAdjustable;
-  }, [editMode, adjustableWidth, adjustableHeight]);
+  }, [isMobile, editMode, adjustableWidth, adjustableHeight]);
+
 
   return (
     <StyledResizable
